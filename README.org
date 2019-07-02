@@ -1,0 +1,100 @@
+#+STARTUP: hidestars indent content
+* The issues
+A couple problems were introduced with the choice of using poweshell cmdlets on windows for the clojure cli.
+** The three competing double quote escaping
+Powershell is its own world, and while it is possible to run a cmdlet from the regular command shell,
+we then have to face 3 competing escaping rules (the shell we're using, powershell, java) for the often necessary
+double quotes of a clojure invokation.
+People may want to invoke clojure from powershell, the regular command prompt, or some other shells like git bash.
+For all but the simplest use cases, Powershell single-handedly defeats that.
+** Tools compatibility
+There are several major tools that simply do not work on windows because of the powershell. 
+It is a fact that most clojure users are not using windows. Tool makers more often than not fall 
+into that category. While they are willing to make some allowances for windows, taking into account the quirks of
+the powershell situation is maybe a bit too much to ask. In order to reduce friction in this regard, we might want the 
+usage patterns to closely ressemble those of linux and mac. The current situation further insulate the windows OS from
+the clojure ecosystem. Which is a shame as this is still the most used OS, the one from which new users could more
+easily arrive.
+
+I've personally experienced trouble with cider which is (was?) the most used IDE. And with
+shadow-cljs, another entry point to the clojure world. These simply do not work with the vanilla clojure cli on windows.
+** Competing implementation
+The situation is so dire that it even sprouted a competing implementation [[https://github.com/frericksm/clj-windows][Clojure installer and CLI tools for windows]] 
+(i'm going on a leg here, not quite sure about the motivations)
+** Not an issue to me !
+These issues mostly go away with some work, using the previously mentioned competing implementation we can mostly 
+get there for the tooling issue. Sean Corfield has been advertising his workflow and it's obviously working for
+him, a professional clojure developer working on windows.
+
+I'll oppose to that the difficulties of a new user, who will be stopped at several points in his journey 
+to clojure. It's hard enough to select a good editor, understand the classpath issues, and so on, without 
+having to contend with the bizarre discrepencies from the unix world.
+
+I also am a professional clojure developer, and i spent much time on these issue. While this is ok to me,
+not everyone has that time.
+
+Windows is competent enough to run a java vm, we can do better.
+* Solutions
+There are several levels of solutions. 
+- We can completely rewrite the powershell cmdlets in some other language.
+- We can keep these around but write a wrapper for their invokation.
+
+|-----------------------------+---------+------------------------------------|
+|                             | rewrite | wrapper                            |
+|-----------------------------+---------+------------------------------------|
+| work is already done        | bad     | good                               |
+| some problems might persist | good    | bad                                |
+| previous testing is lost    | bad     | good                               |
+| performance penalty         | good    | slightly bad depending on language |
+| System complexity           | good    | bad (more pieces)                  |
+|-----------------------------+---------+------------------------------------|
+
+** Wrapper
+
+The goal would be to create both a clojure and clj commands, and place these in the path.
+We can either invoke directly the powershell command, facing the 3 quote escaping rules, or create
+a temporary ps1 file, having to contend with only 2 escaping rules at a time, but do so twice.
+We might be in a position were we need real parsing of the command line to work out the escaping rules.
+
+|------------------------+-----------------+----------+------------------------------------------------------------|
+|                        | batch/cmd files | Compiled | .net Compiled                                              |
+|------------------------+-----------------+----------+------------------------------------------------------------|
+| can do temp files      | bad             | good     | good                                                       |
+| can deal with escaping | bad             | good     | good                                                       |
+| performance (run time) | good            | good     | we're using .net with poweshell so very slightly less good |
+| ease of use            | good            | good     | good                                                       |
+| ease of build          | good            | bad      | bad                                                        |
+| know-how               | good            | depends  | depends                                                    |
+| complexity             | bad             | bad      | average                                                    |
+|------------------------+-----------------+----------+------------------------------------------------------------|
+
+
+** Rewrite
+
+We can completely sidestep the powershell issues.
+
+|------------------------------+-----------------+-------------+------------------------------------------+----------------------------------------------------------------------------+-------------|
+|                              | batch/cmd files | Git bash    | compiled (c, c++, D, rust, nim, pascal!) | .net compiled (c#, f#, what else is there?)                                | Remarks     |
+|------------------------------+-----------------+-------------+------------------------------------------+----------------------------------------------------------------------------+-------------|
+| self-contained               | bad             | bad         | good                                     | good                                                                       |             |
+| ease of port/maintenance     | bad             | good        | bad                                      | we have the powershell implementation that's a thin .net wrapper : goodish |             |
+| caching/avoid launching java | bad             | good        | good                                     | good                                                                       |             |
+| 0 to clojure time (newbies)  | good            | bad         | good                                     | good                                                                       |             |
+| professional ease of use     | good            | depends     | good                                     | good                                                                       |             |
+| performance                  | good            | good        | good                                     | good (.net probably already in memory)                                     | any will do |
+| can be done at all           | bad             | good        | good                                     | good                                                                       |             |
+| know-how                     | good            | depends     | depends                                  | slightly better, c# so easy, good standard lib                             |             |
+| available services           | very bad        | good enough | depends                                  | very good                                                                  |             |
+| a joy to work with           | bad             | nope        | depends                                  | depends                                                                    |             |
+| build process                | good            | good        | hard/depends                             | depends                                                                    |             |
+| ease of feature parity       | bad             | good        | bad                                      | bad                                                                        |             |
+| ease of maintenance          | bad             | good        | depends                                  | medium                                                                     |             |
+
+
+* My opinion
+I lean toward a compiled wrapper, using a temp file for powershell invokation, .net or otherwise.
+
+* Disclaimer
+- I'm not entirely certain if this fulfills Alex Miller's requirements.
+- I winged it on many table cells, i expect some help in filling/amending those judgment calls and adding more dimensions.
+- English is not my native language, so yeah approximate spelling !

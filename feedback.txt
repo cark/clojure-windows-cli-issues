@@ -1,0 +1,53 @@
+
+alexmiller [3:59 PM]
+here's what I need to move things forward:
+1) a list of current issues (these could be tickets, could be other things)
+2) a table with implementation options
+3) and dimensions along which to compare those implementations
+4) cells in the table that evaluate each option on that dimension
+For example, one option is powershell, another might be an implementation in C#
+dimensions would be things like building, installation, maintenance, performance/ability to avoid the jvm startup, etc
+I don't have time to make that table, nor the windows developer experience to adequately perform the evaluation
+
+carkh [4:03 PM]
+I'll take a copy of your requirements and get back to you during the next week
+
+alexmiller [4:04 PM]
+I'm open to this being a thing maintained primarily by the community too (although I think there are a lot of good reasons for us to build and release it)
+
+carkh [4:05 PM]
+makes sense that cognitect keeps the helm of course
+
+lread [4:07 PM]
+@carkh, for completeness, an option for the matrix would be stick with bash and have windows users use Git Bash.
+
+carkh [4:08 PM]
+@lread while i think that works and is perfectly fine, that's not self-contained
+you have to think, newbie programmer deciding to try clojure being ready to go in 5 minutes
+
+lread [4:09 PM]
+agreed, but if you are building a matrix of options, good to include rationales of rejected options. (edited) 
+
+carkh [4:09 PM]
+indeed
+
+alexmiller [4:09 PM]
+yes, please include
+newbie programmer trying clojure is one dimension
+professional clojure programmer is another
+
+lread [4:27 PM]
+@carkh, another option which should be included is reimplement launcher in scripting language of each supported shell: bash (including Git Bash), Command, PowerShell
+It’s nice to have an active Windows developer looking at this!
+
+Markus Gustavsson [8:58 AM]
+Some input for the "matrix":
+I would still prefer a fully native version though. Just a file you download that you can put anywhere you want and just run.
+That is why I suggested C language for implementation. It is the official native language of the win32 API and the executable could link only against dll files installed in Windows by default. But I guess Go and Rust could also do that and they probably have the same filesystem and networking APIs for all supported platforms so they are probably better choices.
+
+This means the Go or Rust version could be used for all platforms instead of bash and powershell. Would mean better system integration and *less* code to maintain.
+But I don't really know Go or Rust so I am just guessing.
+
+carkh [12:55 PM]
+it gets pretty hairy real fast with escaped quote
+but that's a solution nobody talked about, just do what your batch file does, but with an exe, maybe via a temp ps1 file
