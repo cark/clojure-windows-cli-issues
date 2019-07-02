@@ -99,3 +99,4 @@ I lean toward a compiled wrapper, using a temp file for powershell invokation, .
 - I'm not entirely certain if this fulfills Alex Miller's requirements.
 - I winged it on many table cells, i expect some help in filling/amending those judgment calls and adding more dimensions.
 - English is not my native language, so yeah approximate spelling !
+- I left out the installation part, i'd go with a native windows installer but that's for later i think
