@@ -89,7 +89,7 @@ We can completely sidestep the powershell issues.
 | build process                | good            | good        | hard/depends                             | depends                                                                    |             |
 | ease of feature parity       | bad             | good        | bad                                      | bad                                                                        |             |
 | ease of maintenance          | bad             | good        | depends                                  | medium                                                                     |             |
-| can use it on unix too       | yes             | yes         | probably                                 | not in a self contained manner                                             |             |
+| can use it on unix too       | no              | yes         | probably                                 | not in a self contained manner                                             |             |
 
 
 * My opinion
