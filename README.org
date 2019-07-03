@@ -56,40 +56,41 @@ We can either invoke directly the powershell command, facing the 3 quote escapin
 a temporary ps1 file, having to contend with only 2 escaping rules at a time, but do so twice.
 We might be in a position were we need real parsing of the command line to work out the escaping rules.
 
-|------------------------+-----------------+----------+------------------------------------------------------------|
-|                        | batch/cmd files | Compiled | .net Compiled                                              |
-|------------------------+-----------------+----------+------------------------------------------------------------|
-| can do temp files      | bad             | good     | good                                                       |
-| can deal with escaping | bad             | good     | good                                                       |
-| performance (run time) | good            | good     | we're using .net with poweshell so very slightly less good |
-| ease of use            | good            | good     | good                                                       |
-| ease of build          | good            | bad      | bad                                                        |
-| know-how               | good            | depends  | depends                                                    |
-| complexity             | bad             | bad      | average                                                    |
-|------------------------+-----------------+----------+------------------------------------------------------------|
+|------------------------+-----------------+----------+------------------------------------------------------------+--------------------------|
+|                        | batch/cmd files | Compiled | .net Compiled                                              | GraalVM exe              |
+|------------------------+-----------------+----------+------------------------------------------------------------+--------------------------|
+| can do temp files      | bad             | good     | good                                                       | good                     |
+| can deal with escaping | bad             | good     | good                                                       | good                     |
+| performance (run time) | good            | good     | we're using .net with poweshell so very slightly less good | good                     |
+| ease of use            | good            | good     | good                                                       | bad (at time of writing) |
+| ease of build          | good            | bad      | bad                                                        | bad                      |
+| know-how               | good            | depends  | depends                                                    | depends                  |
+| complexity             | bad             | bad      | average                                                    | bad                      |
+|------------------------+-----------------+----------+------------------------------------------------------------+--------------------------|
 
 
 ** Rewrite
 
 We can completely sidestep the powershell issues.
 
-|------------------------------+-----------------+-------------+------------------------------------------+----------------------------------------------------------------------------+-------------|
-|                              | batch/cmd files | Git bash    | compiled (c, c++, D, rust, nim, pascal!) | .net compiled (c#, f#, what else is there?)                                | Remarks     |
-|------------------------------+-----------------+-------------+------------------------------------------+----------------------------------------------------------------------------+-------------|
-| self-contained               | bad             | bad         | good                                     | good                                                                       |             |
-| ease of port/maintenance     | bad             | good        | bad                                      | we have the powershell implementation that's a thin .net wrapper : goodish |             |
-| caching/avoid launching java | bad             | good        | good                                     | good                                                                       |             |
-| 0 to clojure time (newbies)  | good            | bad         | good                                     | good                                                                       |             |
-| professional ease of use     | good            | depends     | good                                     | good                                                                       |             |
-| performance                  | good            | good        | good                                     | good (.net probably already in memory)                                     | any will do |
-| can be done at all           | bad             | good        | good                                     | good                                                                       |             |
-| know-how                     | good            | depends     | depends                                  | slightly better, c# so easy, good standard lib                             |             |
-| available services           | very bad        | good enough | depends                                  | very good                                                                  |             |
-| a joy to work with           | bad             | nope        | depends                                  | depends                                                                    |             |
-| build process                | good            | good        | hard/depends                             | depends                                                                    |             |
-| ease of feature parity       | bad             | good        | bad                                      | bad                                                                        |             |
-| ease of maintenance          | bad             | good        | depends                                  | medium                                                                     |             |
-| can use it on unix too       | no              | yes         | probably                                 | not in a self contained manner                                             |             |
+|------------------------------+-----------------+-------------+------------------------------------------+----------------------------------------------------------------------------+-----------------------------------|
+|                              | batch/cmd files | Git bash    | compiled (c, c++, D, rust, nim, pascal!) | .net compiled (c#, f#, what else is there?)                                | GraalVM exe                       |
+|------------------------------+-----------------+-------------+------------------------------------------+----------------------------------------------------------------------------+-----------------------------------|
+| self-contained               | bad             | bad         | good                                     | good                                                                       | ? (dll problems ?)                |
+| ease of port/maintenance     | bad             | good        | bad                                      | we have the powershell implementation that's a thin .net wrapper : goodish | can use clojure so good i guess ? |
+| caching/avoid launching java | bad             | good        | good                                     | good                                                                       | it is java, but should be fast    |
+| 0 to clojure time (newbies)  | good            | bad         | good                                     | good                                                                       | i don't know                      |
+| professional ease of use     | good            | depends     | good                                     | good                                                                       | don't know                        |
+| performance                  | good            | good        | good                                     | good (.net probably already in memory)                                     | good                              |
+| can be done at all           | bad             | good        | good                                     | good                                                                       | good                              |
+| know-how                     | good            | depends     | depends                                  | slightly better, c# so easy, good standard lib                             | borkdude is our specialist !      |
+| available services           | very bad        | good enough | depends                                  | very good                                                                  | good                              |
+| a joy to work with           | bad             | nope        | depends                                  | depends                                                                    | good                              |
+| build process                | good            | good        | hard/depends                             | depends                                                                    | don't know                        |
+| ease of feature parity       | bad             | good        | bad                                      | bad                                                                        | clojure so good                   |
+| ease of maintenance          | bad             | good        | depends                                  | medium                                                                     | good                              |
+| can use it on unix too       | no              | yes         | probably                                 | not in a self contained manner                                             | good                              |
+| clojure all the way down     | no              | no          | no                                       | possibly                                                                   | yes                               |
 
 
 * My opinion
