@@ -68,7 +68,7 @@ We might be in a position were we need real parsing of the command line to work 
 | complexity             | bad             | bad      | average                                                    | bad                      |
 |------------------------+-----------------+----------+------------------------------------------------------------+--------------------------|
 
-
+I went ahead and made an [exploratory wrapper](https://github.com/cark/clojure-win-cli-wrap) using Nim. Been using -EncodedCommand, thus avoiding the temp file.
 ** Rewrite
 
 We can completely sidestep the powershell issues.
