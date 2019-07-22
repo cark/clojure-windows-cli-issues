@@ -95,6 +95,7 @@ We can completely sidestep the powershell issues.
 
 * My opinion
 I lean toward a compiled wrapper, using a temp file for powershell invokation, .net or otherwise.
+update : I went ahead and made an [[https://github.com/cark/clojure-win-cli-wrap][exploratory wrapper]] using Nim. Been using -EncodedCommand, thus avoiding the temp file.
 
 * Disclaimer
 - I'm not entirely certain if this fulfills Alex Miller's requirements.
