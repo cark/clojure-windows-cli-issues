@@ -21,6 +21,10 @@ shadow-cljs, another entry point to the clojure world. These simply do not work 
 ** Competing implementation
 The situation is so dire that it even sprouted a competing implementation [[https://github.com/frericksm/clj-windows][Clojure installer and CLI tools for windows]] 
 (i'm going on a leg here, not quite sure about the motivations)
+** Installation issues
+The powershell smodule installation requires the user to lower his system security levels by allowing any powershell scripts
+to be run. That's bad practice right there. This may be alleviated somewhat by code signing the ClojureTools module, 
+thus reducing the execution policy requirements to AllSigned.
 ** Not an issue to me !
 These issues mostly go away with some work, using the previously mentioned competing implementation we can mostly 
 get there for the tooling issue. Sean Corfield has been advertising his workflow and it's obviously working for
@@ -35,9 +39,11 @@ not everyone has that time.
 
 Windows is competent enough to run a java vm, we can do better.
 * Solutions
+The goal is to make the dev tools work, that means the command line must work from a regular command shell, and the
+quoting must ressemble the one on unix.
 There are several levels of solutions. 
 - We can completely rewrite the powershell cmdlets in some other language.
-- We can keep these around but write a wrapper for their invokation.
+- We can keep these around but write a wrapper for their invokation from the regular command line.
 
 |-----------------------------+---------+------------------------------------|
 |                             | rewrite | wrapper                            |
@@ -47,13 +53,16 @@ There are several levels of solutions.
 | previous testing is lost    | bad     | good                               |
 | performance penalty         | good    | slightly bad depending on language |
 | System complexity           | good    | bad (more pieces)                  |
+| Powershell performance tax  | good    | bad                                |
 |-----------------------------+---------+------------------------------------|
 
 ** Wrapper
 
 The goal would be to create both a clojure and clj commands, and place these in the path.
-We can either invoke directly the powershell command, facing the 3 quote escaping rules, or create
-a temporary ps1 file, having to contend with only 2 escaping rules at a time, but do so twice.
+- We can invoke directly the powershell command, facing the 3 quote escaping rules
+- Createa temporary ps1 file, having to contend with only 2 escaping rules at a time, but do so twice.
+- Use the -EncodedCommand powershell command line
+
 We might be in a position were we need real parsing of the command line to work out the escaping rules.
 
 |------------------------+-----------------+----------+------------------------------------------------------------+--------------------------|
@@ -63,39 +72,42 @@ We might be in a position were we need real parsing of the command line to work 
 | can deal with escaping | bad             | good     | good                                                       | good                     |
 | performance (run time) | good            | good     | we're using .net with poweshell so very slightly less good | good                     |
 | ease of use            | good            | good     | good                                                       | bad (at time of writing) |
-| ease of build          | good            | bad      | bad                                                        | bad                      |
+| ease of build          | good            | depends  | bad                                                        | bad                      |
 | know-how               | good            | depends  | depends                                                    | depends                  |
-| complexity             | bad             | bad      | average                                                    | bad                      |
+| complexity             | bad             | depends  | bad                                                        | bad                      |
 |------------------------+-----------------+----------+------------------------------------------------------------+--------------------------|
 
-I went ahead and made an [[https://github.com/cark/clojure-win-cli-wrap][exploratory wrapper]] using Nim. Been using -EncodedCommand, thus avoiding the temp file.
+I went ahead and made an [[https://github.com/cark/clojure-win-cli-wrap][exploratory wrapper]] using Nim. Been using -EncodedCommand, thus avoiding the temp file. 
+Works well for me at least !
 ** Rewrite
 
 We can completely sidestep the powershell issues.
 
-|------------------------------+-----------------+-------------+------------------------------------------+----------------------------------------------------------------------------+-----------------------------------|
-|                              | batch/cmd files | Git bash    | compiled (c, c++, D, rust, nim, pascal!) | .net compiled (c#, f#, what else is there?)                                | GraalVM exe                       |
-|------------------------------+-----------------+-------------+------------------------------------------+----------------------------------------------------------------------------+-----------------------------------|
-| self-contained               | bad             | bad         | good                                     | good                                                                       | ? (dll problems ?)                |
-| ease of port/maintenance     | bad             | good        | bad                                      | we have the powershell implementation that's a thin .net wrapper : goodish | can use clojure so good i guess ? |
-| caching/avoid launching java | bad             | good        | good                                     | good                                                                       | it is java, but should be fast    |
-| 0 to clojure time (newbies)  | good            | bad         | good                                     | good                                                                       | i don't know                      |
-| professional ease of use     | good            | depends     | good                                     | good                                                                       | don't know                        |
-| performance                  | good            | good        | good                                     | good (.net probably already in memory)                                     | good                              |
-| can be done at all           | bad             | good        | good                                     | good                                                                       | good                              |
-| know-how                     | good            | depends     | depends                                  | slightly better, c# so easy, good standard lib                             | borkdude is our specialist !      |
-| available services           | very bad        | good enough | depends                                  | very good                                                                  | good                              |
-| a joy to work with           | bad             | nope        | depends                                  | depends                                                                    | good                              |
-| build process                | good            | good        | hard/depends                             | depends                                                                    | don't know                        |
-| ease of feature parity       | bad             | good        | bad                                      | bad                                                                        | clojure so good                   |
-| ease of maintenance          | bad             | good        | depends                                  | medium                                                                     | good                              |
-| can use it on unix too       | no              | yes         | probably                                 | not in a self contained manner                                             | good                              |
-| clojure all the way down     | no              | no          | no                                       | possibly                                                                   | yes                               |
+|------------------------------+-----------------+-------------+-------------------------------------------+----------------------------------------------------------------------------+-----------------------------------|
+|                              | batch/cmd files | Git bash    | compiled (c, c++, D, rust, nim, pascal!)  | .net compiled (c#, f#, what else is there?)                                | GraalVM exe                       |
+|------------------------------+-----------------+-------------+-------------------------------------------+----------------------------------------------------------------------------+-----------------------------------|
+| self-contained               | bad             | bad         | good                                      | good                                                                       | ? (dll problems ?)                |
+| ease of port/maintenance     | bad             | good        | Can do it in a portable way               | we have the powershell implementation that's a thin .net wrapper : goodish | can use clojure so good i guess ? |
+| caching/avoid launching java | bad             | good        | good                                      | good                                                                       | it is java, but should be fast    |
+| 0 to clojure time (newbies)  | good            | bad         | good                                      | good                                                                       | i don't know                      |
+| professional ease of use     | good            | depends     | good                                      | good                                                                       | don't know                        |
+| performance                  | good            | good        | good                                      | bad .net is also slow to start                                             | good                              |
+| can be done at all           | bad             | good        | good                                      | good                                                                       | good                              |
+| know-how                     | good            | depends     | depends                                   | slightly better, c# so easy, good standard lib                             | borkdude is our specialist !      |
+| available services           | very bad        | good enough | depends                                   | very good                                                                  | good                              |
+| a joy to work with           | bad             | nope        | depends                                   | depends                                                                    | good                              |
+| build process                | good            | good        | Can do it in a portable way               | depends                                                                    | don't know                        |
+| ease of feature parity       | bad             | good        | good i we make it the main implementation | bad                                                                        | clojure so good                   |
+| ease of maintenance          | bad             | good        | good if portable                          | medium                                                                     | good                              |
+| can use it on unix too       | no              | yes         | yes if portable                           | not in a self contained manner                                             | good                              |
+| clojure all the way down     | no              | no          | no                                        | possibly                                                                   | yes                               |
 
 
 * My opinion
-I lean toward a compiled wrapper, using a temp file for powershell invokation, .net or otherwise.
-update : I went ahead and made an [[https://github.com/cark/clojure-win-cli-wrap][exploratory wrapper]] using Nim. Been using -EncodedCommand, thus avoiding the temp file.
+I leaned toward a compiled wrapper, and made one to explore the possibility : [[https://github.com/cark/clojure-win-cli-wrap][exploratory wrapper]] using Nim. Been using -EncodedCommand, thus avoiding the temp file.
+It works well enough, but we're still paying the powershell performance tax this way. 
+
+IMO, the perfect solution would be a portable compiled rewrite of the shell script. I'm willing to do it if necessary.
 
 * Disclaimer
 - I'm not entirely certain if this fulfills Alex Miller's requirements.
