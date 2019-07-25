@@ -22,7 +22,7 @@ shadow-cljs, another entry point to the clojure world. These simply do not work 
 The situation is so dire that it even sprouted a competing implementation [[https://github.com/frericksm/clj-windows][Clojure installer and CLI tools for windows]] 
 (i'm going on a leg here, not quite sure about the motivations)
 ** Installation issues
-The powershell smodule installation requires the user to lower his system security levels by allowing any powershell scripts
+The powershell module installation requires the user to lower his system security levels by allowing any powershell scripts
 to be run. That's bad practice right there. This may be alleviated somewhat by code signing the ClojureTools module, 
 thus reducing the execution policy requirements to AllSigned.
 ** Not an issue to me !
@@ -54,13 +54,14 @@ There are several levels of solutions.
 | performance penalty         | good    | slightly bad depending on language |
 | System complexity           | good    | bad (more pieces)                  |
 | Powershell performance tax  | good    | bad                                |
+| The low hanging fruit       | bad     | good                               |
 |-----------------------------+---------+------------------------------------|
 
 ** Wrapper
 
 The goal would be to create both a clojure and clj commands, and place these in the path.
 - We can invoke directly the powershell command, facing the 3 quote escaping rules
-- Createa temporary ps1 file, having to contend with only 2 escaping rules at a time, but do so twice.
+- Create a temporary ps1 file, having to contend with only 2 escaping rules at a time, but do so twice.
 - Use the -EncodedCommand powershell command line
 
 We might be in a position were we need real parsing of the command line to work out the escaping rules.
