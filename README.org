@@ -107,7 +107,8 @@ We can completely sidestep the powershell issues.
 I leaned toward a compiled wrapper, and made one to explore the possibility : [[https://github.com/cark/clojure-win-cli-wrap][exploratory wrapper]] using Nim. Been using -EncodedCommand, thus avoiding the temp file.
 It works well enough, but we're still paying the powershell performance tax this way. 
 
-IMO, the perfect solution would be a portable compiled rewrite of the shell script. I'm willing to do it if necessary.
+IMO, the perfect solution would be a portable compiled rewrite of the shell script. I'm willing to do it if necessary, though i'm
+certainly not the most qualified for the unix parts.
 
 * Disclaimer
 - I'm not entirely certain if this fulfills Alex Miller's requirements.
