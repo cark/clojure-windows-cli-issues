@@ -4,7 +4,7 @@ A couple problems were introduced with the choice of using poweshell cmdlets on 
 ** The three competing double quote escaping
 Powershell is its own world, and while it is possible to run a cmdlet from the regular command shell,
 we then have to face 3 competing escaping rules (the shell we're using, powershell, java) for the often necessary
-double quotes of a clojure invokation.
+double quotes of a clojure invocation.
 People may want to invoke clojure from powershell, the regular command prompt, or some other shells like git bash.
 For all but the simplest use cases, Powershell single-handedly defeats that.
 ** Tools compatibility
@@ -43,7 +43,7 @@ The goal is to make the dev tools work, that means the command line must work fr
 quoting must ressemble the one on unix.
 There are several levels of solutions. 
 - We can completely rewrite the powershell cmdlets in some other language.
-- We can keep these around but write a wrapper for their invokation from the regular command line.
+- We can keep these around but write a wrapper for their invocation from the regular command line.
 
 |-----------------------------+---------+------------------------------------|
 |                             | rewrite | wrapper                            |
