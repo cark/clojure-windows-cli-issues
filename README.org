@@ -1,48 +1,30 @@
 #+STARTUP: hidestars indent content
 * The issues
-A couple problems were introduced with the choice of using poweshell cmdlets on windows for the clojure cli.
-** The three competing double quote escaping
-Powershell is its own world, and while it is possible to run a cmdlet from the regular command shell,
-we then have to face 3 competing escaping rules (the shell we're using, powershell, java) for the often necessary
-double quotes of a clojure invocation.
-People may want to invoke clojure from powershell, the regular command prompt, or some other shells like git bash.
-For all but the simplest use cases, Powershell single-handedly defeats that.
-** Tools compatibility
-There are several major tools that simply do not work on windows because of the powershell. 
-It is a fact that most clojure users are not using windows. Tool makers more often than not fall 
-into that category. While they are willing to make some allowances for windows, taking into account the quirks of
-the powershell situation is maybe a bit too much to ask. In order to reduce friction in this regard, we might want the 
-usage patterns to closely ressemble those of linux and mac. The current situation further insulate the windows OS from
-the clojure ecosystem. Which is a shame as this is still the most used OS, the one from which new users could more
-easily arrive.
+A few problems were introduced with the choice of using Poweshell scripts on Windows for the clojure cli.
 
-I've personally experienced trouble with cider which is (was?) the most used IDE. And with
-shadow-cljs, another entry point to the clojure world. These simply do not work with the vanilla clojure cli on windows.
-** Competing implementation
-The situation is so dire that it even sprouted a competing implementation [[https://github.com/frericksm/clj-windows][Clojure installer and CLI tools for windows]] 
-(i'm going on a leg here, not quite sure about the motivations)
-** Installation issues
-The powershell module installation requires the user to lower his system security levels by allowing any powershell scripts
-to be run. That's bad practice right there. This may be alleviated somewhat by code signing the ClojureTools module, 
-thus reducing the execution policy requirements to AllSigned.
-** Not an issue to me !
-These issues mostly go away with some work, using the previously mentioned competing implementation we can mostly 
-get there for the tooling issue. Sean Corfield has been advertising his workflow and it's obviously working for
-him, a professional clojure developer working on windows.
+- Quote escaping : 3 escaping rules when using from cmd.exe. Escaping different from Posix systems even from Powershell only.
+- Incompatible command line between Powershell and Posix, even worse from cmd.exe
+- Quoting issues cannot be fixed on Powershell
+- Powershell startup time tax
+- Cider cannot "jack-in" a deps.edn project, slowing deps.edn adoption.
+- Shadow-clj doesn't work on Windows with a deps.edn project, slowing deps.edn adoption.
+- Cannot create a clojure batch file or exe in the path because of Powershell aliases discovery causing infinite recursion on first invocation from Powershell
+- Competing implementation would probably go away if we fix this
+- Need to lower Powershell security by changing global script execution policy
+- Current installation process is clunky, and not "Windows idiomatic"
+** These are not bugs
+Those issues are not bugs.
+- They cannot be fixed as long as we use Powershell
+- Almost every issue goes away with a binary wrapper around the Powershell scripts.
+- Every single one of those issues goes away with a binary rewrite of the Powershell/bash scripts
+** Works with my workflow
+I'm of the opinion that "works with my workflow" isn't good enough. Workflows differ, issues are real and are quite easily fixable.
 
-I'll oppose to that the difficulties of a new user, who will be stopped at several points in his journey 
-to clojure. It's hard enough to select a good editor, understand the classpath issues, and so on, without 
-having to contend with the bizarre discrepencies from the unix world.
-
-I also am a professional clojure developer, and i spent much time on these issue. While this is ok to me,
-not everyone has that time.
-
-Windows is competent enough to run a java vm, we can do better.
 * Solutions
 The goal is to make the dev tools work, that means the command line must work from a regular command shell, and the
 quoting must ressemble the one on unix.
 There are several levels of solutions. 
-- We can completely rewrite the powershell cmdlets in some other language.
+- We can completely rewrite the powershell scripts in some other language.
 - We can keep these around but write a wrapper for their invocation from the regular command line.
 
 |-----------------------------+---------+------------------------------------|
@@ -64,7 +46,7 @@ The goal would be to create both a clojure and clj commands, and place these in 
 - Create a temporary ps1 file, having to contend with only 2 escaping rules at a time, but do so twice.
 - Use the -EncodedCommand powershell command line
 
-We might be in a position were we need real parsing of the command line to work out the escaping rules.
+Light parsing of the command line is required for maximum Posix compatibility
 
 |------------------------+-----------------+----------+------------------------------------------------------------+--------------------------|
 |                        | batch/cmd files | Compiled | .net Compiled                                              | GraalVM exe              |
@@ -103,13 +85,12 @@ We can completely sidestep the powershell issues.
 | can use it on unix too       | no              | yes         | yes if portable                           | not in a self contained manner                                             | good                              |
 | clojure all the way down     | no              | no          | no                                        | possibly                                                                   | yes                               |
 
-
+I went ahead and made a [[https://github.com/cark/clojure-cli-portable][portable implementation]] using Nim. Tested on Windows and Linux.
 * My opinion
 I leaned toward a compiled wrapper, and made one to explore the possibility : [[https://github.com/cark/clojure-win-cli-wrap][exploratory wrapper]] using Nim. Been using -EncodedCommand, thus avoiding the temp file.
-It works well enough, but we're still paying the powershell performance tax this way. 
+It works well enough, but we're still paying the Powershell performance tax this way, we also still face the Alias discovery Powershell bug. 
 
-IMO, the perfect solution would be a portable compiled rewrite of the shell script. I'm willing to do it if necessary, though i'm
-certainly not the most qualified for the unix parts.
+IMO the perfect solution is the portable compiled rewrite of the shell script. An example of what it could look like is here : [[https://github.com/cark/clojure-cli-portable][portable implementation]].
 
 * Disclaimer
 - I'm not entirely certain if this fulfills Alex Miller's requirements.
