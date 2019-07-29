@@ -7,7 +7,7 @@ A few problems were introduced with the choice of using Poweshell scripts on Win
 - Quoting issues cannot be fixed on Powershell
 - Powershell startup time tax
 - Cider cannot "jack-in" a deps.edn project, slowing deps.edn adoption.
-- Shadow-clj doesn't work on Windows with a deps.edn project, slowing deps.edn adoption.
+- +Shadow-clj doesn't work on Windows with a deps.edn project, slowing deps.edn adoption.+ (this was fixed, shadow-cljs now invokes powershell directly)
 - Cannot create a clojure batch file or exe in the path because of Powershell aliases discovery causing infinite recursion on first invocation from Powershell
 - Competing implementation would probably go away if we fix this
 - Need to lower Powershell security by changing global script execution policy
